@@ -1,0 +1,95 @@
+import sqlite3
+import json
+from datetime import datetime
+from typing import List, Dict, Optional
+
+class Database:
+    def __init__(self, db_path: str = "auto_ceo.db"):
+        self.db_path = db_path
+        self.init_db()
+    
+    def init_db(self):
+        """Initialize database tables"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        # Documents table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS documents (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                filename TEXT NOT NULL,
+                content TEXT,
+                summary TEXT,
+                insights TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        
+        # Tasks table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS tasks (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                document_id INTEGER,
+                task_type TEXT,
+                content TEXT,
+                status TEXT DEFAULT 'pending',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (document_id) REFERENCES documents (id)
+            )
+        ''')
+        
+        conn.commit()
+        conn.close()
+    
+    def save_document(self, filename: str, content: str, summary: str, insights: str) -> int:
+        """Save processed document"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            INSERT INTO documents (filename, content, summary, insights)
+            VALUES (?, ?, ?, ?)
+        ''', (filename, content, summary, insights))
+        
+        doc_id = cursor.lastrowid
+        conn.commit()
+        conn.close()
+        return doc_id
+    
+    def save_task(self, document_id: int, task_type: str, content: str):
+        """Save generated task"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            INSERT INTO tasks (document_id, task_type, content)
+            VALUES (?, ?, ?)
+        ''', (document_id, task_type, content))
+        
+        conn.commit()
+        conn.close()
+    
+    def get_recent_documents(self, limit: int = 10) -> List[Dict]:
+        """Get recent documents"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            SELECT id, filename, summary, created_at
+            FROM documents
+            ORDER BY created_at DESC
+            LIMIT ?
+        ''', (limit,))
+        
+        results = cursor.fetchall()
+        conn.close()
+        
+        return [
+            {
+                'id': row[0],
+                'filename': row[1],
+                'summary': row[2],
+                'created_at': row[3]
+            }
+            for row in results
+        ]
