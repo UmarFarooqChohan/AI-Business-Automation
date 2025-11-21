@@ -1,9 +1,15 @@
 import PyPDF2
 import docx
 from PIL import Image
-import pytesseract
 from typing import Optional
 import io
+
+# Make pytesseract optional
+try:
+    import pytesseract
+    TESSERACT_AVAILABLE = True
+except ImportError:
+    TESSERACT_AVAILABLE = False
 
 class DocumentProcessor:
     """Handles document reading and text extraction"""
@@ -53,9 +59,15 @@ class DocumentProcessor:
     @staticmethod
     def _extract_from_image(file_content: bytes) -> str:
         """Extract text from image using OCR"""
-        image = Image.open(io.BytesIO(file_content))
-        text = pytesseract.image_to_string(image)
-        return text.strip()
+        if not TESSERACT_AVAILABLE:
+            return "OCR not available. Please upload PDF or DOCX files for text extraction."
+        
+        try:
+            image = Image.open(io.BytesIO(file_content))
+            text = pytesseract.image_to_string(image)
+            return text.strip()
+        except Exception as e:
+            return f"OCR error: {str(e)}. Please try a different file format."
     
     @staticmethod
     def validate_file(filename: str, file_size: int, max_size: int = 10*1024*1024) -> tuple[bool, str]:
