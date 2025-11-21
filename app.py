@@ -1,5 +1,6 @@
 import streamlit as st
 import os
+import sqlite3
 from datetime import datetime
 from document_processor import DocumentProcessor
 from ai_agent import AIAgent
@@ -7,6 +8,26 @@ from ai_agent_demo import AIAgentDemo
 from database import Database
 from config import Config
 from auth import AuthManager
+
+# Fix database schema on startup (for Streamlit Cloud)
+def fix_database_schema():
+    """Ensure database has user_id column"""
+    db_path = "auto_ceo.db"
+    if os.path.exists(db_path):
+        try:
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            cursor.execute("PRAGMA table_info(documents)")
+            columns = [column[1] for column in cursor.fetchall()]
+            if 'user_id' not in columns:
+                cursor.execute("ALTER TABLE documents ADD COLUMN user_id INTEGER")
+                conn.commit()
+            conn.close()
+        except Exception:
+            pass
+
+# Run database fix before anything else
+fix_database_schema()
 
 # Page config
 st.set_page_config(
