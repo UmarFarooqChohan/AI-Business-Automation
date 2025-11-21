@@ -26,6 +26,16 @@ class Database:
             )
         ''')
         
+        # Check if user_id column exists, add it if not (migration)
+        try:
+            cursor.execute("PRAGMA table_info(documents)")
+            columns = [column[1] for column in cursor.fetchall()]
+            if 'user_id' not in columns:
+                cursor.execute("ALTER TABLE documents ADD COLUMN user_id INTEGER")
+                conn.commit()
+        except Exception:
+            pass  # Column already exists or table just created
+        
         # Tasks table
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS tasks (
@@ -47,10 +57,17 @@ class Database:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         
-        cursor.execute('''
-            INSERT INTO documents (user_id, filename, content, summary, insights)
-            VALUES (?, ?, ?, ?, ?)
-        ''', (user_id, filename, content, summary, insights))
+        try:
+            cursor.execute('''
+                INSERT INTO documents (user_id, filename, content, summary, insights)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (user_id, filename, content, summary, insights))
+        except sqlite3.OperationalError:
+            # Fallback if user_id column doesn't exist
+            cursor.execute('''
+                INSERT INTO documents (filename, content, summary, insights)
+                VALUES (?, ?, ?, ?)
+            ''', (filename, content, summary, insights))
         
         doc_id = cursor.lastrowid
         conn.commit()
@@ -75,24 +92,35 @@ class Database:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         
-        if user_id is not None:
+        try:
+            if user_id is not None:
+                cursor.execute('''
+                    SELECT id, filename, summary, created_at
+                    FROM documents
+                    WHERE user_id = ?
+                    ORDER BY created_at DESC
+                    LIMIT ?
+                ''', (user_id, limit))
+            else:
+                cursor.execute('''
+                    SELECT id, filename, summary, created_at
+                    FROM documents
+                    WHERE user_id IS NULL
+                    ORDER BY created_at DESC
+                    LIMIT ?
+                ''', (limit,))
+            
+            results = cursor.fetchall()
+        except sqlite3.OperationalError:
+            # Fallback if user_id column doesn't exist yet
             cursor.execute('''
                 SELECT id, filename, summary, created_at
                 FROM documents
-                WHERE user_id = ?
-                ORDER BY created_at DESC
-                LIMIT ?
-            ''', (user_id, limit))
-        else:
-            cursor.execute('''
-                SELECT id, filename, summary, created_at
-                FROM documents
-                WHERE user_id IS NULL
                 ORDER BY created_at DESC
                 LIMIT ?
             ''', (limit,))
+            results = cursor.fetchall()
         
-        results = cursor.fetchall()
         conn.close()
         
         return [
