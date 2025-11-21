@@ -28,8 +28,8 @@ env*/
 .DS_Store
 Thumbs.db
 
-# Streamlit
-.streamlit/
+# Streamlit - allow config but not secrets with actual keys
+.streamlit/secrets.toml
 
 # Logs
 *.log
