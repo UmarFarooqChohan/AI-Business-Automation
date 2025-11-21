@@ -79,7 +79,7 @@ def show_auth_page():
             <div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                         padding: 2rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
                         margin: 2rem 0;'>
-                <h2 style='color: white; text-align: center; margin-bottom: 1.5rem;'>Welcome! 👋</h2>
+                <h2 style='color: white; text-align: center; margin-bottom: 1.5rem;'>Welcome! </h2>
             </div>
         """, unsafe_allow_html=True)
         
