@@ -6,8 +6,18 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Config:
-    # API Keys
-    OPENAI_API_KEY: Optional[str] = os.getenv("OPENAI_API_KEY")
+    # API Keys - Try Streamlit secrets first, then environment variable, then default
+    @staticmethod
+    def get_api_key():
+        try:
+            import streamlit as st
+            if hasattr(st, 'secrets') and 'GOOGLE_API_KEY' in st.secrets:
+                return st.secrets['GOOGLE_API_KEY']
+        except:
+            pass
+        return os.getenv("GOOGLE_API_KEY", "AIzaSyA58E56kqLge13tcJy1yoRpOXRKZ20duxc")
+    
+    GOOGLE_API_KEY: Optional[str] = get_api_key.__func__()
     
     # Database
     DATABASE_URL = "sqlite:///./auto_ceo.db"
@@ -17,7 +27,7 @@ class Config:
     ALLOWED_EXTENSIONS = {'.pdf', '.docx', '.txt', '.png', '.jpg', '.jpeg'}
     
     # AI Settings
-    DEFAULT_MODEL = "gpt-3.5-turbo"
+    DEFAULT_MODEL = "gemini-2.5-flash"
     MAX_TOKENS = 1000
     TEMPERATURE = 0.7
     

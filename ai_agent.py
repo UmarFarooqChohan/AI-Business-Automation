@@ -1,14 +1,14 @@
-import openai
+import google.generativeai as genai
 from typing import Dict, List
 from config import Config
 
 class AIAgent:
     def __init__(self):
-        if not Config.OPENAI_API_KEY:
-            raise ValueError("OpenAI API key not found. Set OPENAI_API_KEY environment variable.")
+        if not Config.GOOGLE_API_KEY:
+            raise ValueError("Google API key not found. Set GOOGLE_API_KEY environment variable.")
         
-        openai.api_key = Config.OPENAI_API_KEY
-        self.client = openai.OpenAI(api_key=Config.OPENAI_API_KEY)
+        genai.configure(api_key=Config.GOOGLE_API_KEY)
+        self.model = genai.GenerativeModel(Config.DEFAULT_MODEL)
         self.use_demo_fallback = False
     
     def analyze_document(self, content: str, filename: str) -> Dict[str, str]:
@@ -21,13 +21,21 @@ class AIAgent:
         summary = self._generate_summary(content)
         
         # Check if we got an error (quota exceeded)
-        if "Error code: 429" in summary or "insufficient_quota" in summary:
+        if "QUOTA_EXCEEDED" in summary or "Error code: 429" in summary or "insufficient_quota" in summary:
             self.use_demo_fallback = True
             from ai_agent_demo import AIAgentDemo
             demo_agent = AIAgentDemo()
             return demo_agent.analyze_document(content, filename)
         
         insights = self._generate_insights(content, summary)
+        
+        # Check if insights failed
+        if "QUOTA_EXCEEDED" in insights:
+            self.use_demo_fallback = True
+            from ai_agent_demo import AIAgentDemo
+            demo_agent = AIAgentDemo()
+            return demo_agent.analyze_document(content, filename)
+        
         email = self._generate_email(content, summary)
         tasks = self._generate_tasks(content, summary, insights)
         
@@ -40,86 +48,122 @@ class AIAgent:
     
     def _generate_summary(self, content: str) -> str:
         prompt = f"""
-        Analyze this business document and provide a concise summary:
+        Analyze this business document and provide a concise summary (max 150 words):
         
         Document Content:
-        {content[:2000]}...
+        {content[:1500]}
         
-        Provide a professional summary highlighting:
+        Include:
         - Key points and main topics
         - Important decisions or recommendations
-        - Critical data or metrics
-        - Action items mentioned
-        
-        Keep it under 200 words and business-focused.
+        - Critical metrics
+        - Action items
         """
         
         return self._call_gpt(prompt) 
    
     def _generate_insights(self, content: str, summary: str) -> str:
         prompt = f"""
-        Based on this business document, provide strategic insights and recommendations:
+        Based on this summary, provide strategic insights (max 200 words):
         
-        Summary: {summary}
+        Summary: {summary[:500]}
         
-        Provide:
+        Provide bullet points for:
         1. Key business implications
-        2. Potential risks or opportunities
+        2. Risks or opportunities
         3. Strategic recommendations
-        4. Next steps for leadership
-        
-        Be specific and actionable. Format as bullet points.
+        4. Next steps
         """
         
         return self._call_gpt(prompt)
     
     def _generate_email(self, content: str, summary: str) -> str:
         prompt = f"""
-        Generate a professional email response based on this document:
+        Generate a professional email (max 150 words):
         
-        Summary: {summary}
+        Summary: {summary[:400]}
         
-        Create an email that:
-        - Acknowledges receipt of the document
-        - Summarizes key points
-        - Suggests next steps
-        - Maintains professional tone
-        
-        Include subject line and full email body.
+        Include:
+        - Subject line
+        - Acknowledgement
+        - Key points summary
+        - Next steps
         """
         
         return self._call_gpt(prompt)
     
     def _generate_tasks(self, content: str, summary: str, insights: str) -> str:
         prompt = f"""
-        Based on this analysis, create a list of follow-up tasks:
+        Create 5 actionable follow-up tasks (max 150 words):
         
-        Summary: {summary}
-        Insights: {insights}
+        Summary: {summary[:300]}
+        Insights: {insights[:300]}
         
-        Generate 3-5 specific, actionable tasks that should be completed:
-        - Include responsible parties (roles, not names)
-        - Set realistic timelines
-        - Prioritize by importance
+        For each task include:
+        - Action item
+        - Responsible role
+        - Timeline
         
-        Format as numbered list with details.
+        Format as numbered list.
         """
         
         return self._call_gpt(prompt)
     
     def _call_gpt(self, prompt: str) -> str:
         try:
-            response = self.client.chat.completions.create(
-                model=Config.DEFAULT_MODEL,
-                messages=[
-                    {"role": "system", "content": "You are an expert business analyst and automation assistant. Provide clear, actionable, and professional responses."},
-                    {"role": "user", "content": prompt}
-                ],
-                max_tokens=Config.MAX_TOKENS,
-                temperature=Config.TEMPERATURE
+            full_prompt = f"""You are an expert business analyst and automation assistant. Provide clear, actionable, and professional responses.
+
+{prompt}"""
+            
+            response = self.model.generate_content(
+                full_prompt,
+                generation_config=genai.types.GenerationConfig(
+                    max_output_tokens=2000,  # Increased token limit
+                    temperature=Config.TEMPERATURE,
+                ),
+                safety_settings=[
+                    {
+                        "category": "HARM_CATEGORY_HARASSMENT",
+                        "threshold": "BLOCK_NONE",
+                    },
+                    {
+                        "category": "HARM_CATEGORY_HATE_SPEECH",
+                        "threshold": "BLOCK_NONE",
+                    },
+                    {
+                        "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                        "threshold": "BLOCK_NONE",
+                    },
+                    {
+                        "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                        "threshold": "BLOCK_NONE",
+                    },
+                ]
             )
             
-            return response.choices[0].message.content.strip()
+            # Check if response has valid content
+            if not response.candidates:
+                self.use_demo_fallback = True
+                return "QUOTA_EXCEEDED"
+            
+            candidate = response.candidates[0]
+            
+            # Check finish reason
+            if candidate.finish_reason != 1:  # 1 = STOP (normal completion)
+                # Try to get partial content if available
+                if candidate.content and candidate.content.parts:
+                    return candidate.content.parts[0].text.strip()
+                else:
+                    # Fall back to demo mode
+                    self.use_demo_fallback = True
+                    return "QUOTA_EXCEEDED"
+            
+            return response.text.strip()
         
         except Exception as e:
-            return f"Error generating response: {str(e)}"
+            error_msg = str(e)
+            # Check for quota or API errors
+            if "quota" in error_msg.lower() or "429" in error_msg or "limit" in error_msg.lower() or "finish_reason" in error_msg.lower():
+                self.use_demo_fallback = True
+                return "QUOTA_EXCEEDED"
+            return f"Error generating response: {error_msg}"

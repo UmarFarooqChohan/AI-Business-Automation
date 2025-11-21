@@ -1,13 +1,12 @@
 """
-Demo AI Agent with dynamic content analysis
+Improved Demo AI Agent with dynamic content analysis
 """
 
 from typing import Dict
 import re
 
-
-class AIAgentDemo:
-    """Demo AI agent with content-aware responses"""
+class AIAgentDemoV2:
+    """Enhanced demo AI agent with content-aware responses"""
     
     def __init__(self):
         self.demo_mode = True
@@ -27,29 +26,24 @@ class AIAgentDemo:
         
         # Analyze content themes
         content_lower = content.lower()
-        themes = []
+        themes = {
+            'financial': any(word in content_lower for word in ['revenue', 'profit', 'cost', 'budget', 'financial', 'investment', 'expense']),
+            'strategic': any(word in content_lower for word in ['strategy', 'plan', 'goal', 'objective', 'vision', 'mission']),
+            'operational': any(word in content_lower for word in ['process', 'operation', 'efficiency', 'workflow', 'implementation']),
+            'meeting': any(word in content_lower for word in ['meeting', 'discussion', 'attendees', 'agenda', 'minutes']),
+            'proposal': any(word in content_lower for word in ['proposal', 'recommend', 'suggest', 'propose']),
+            'report': any(word in content_lower for word in ['report', 'analysis', 'findings', 'results', 'summary']),
+        }
         
-        if any(word in content_lower for word in ['revenue', 'profit', 'cost', 'budget', 'financial', 'investment', '$']):
-            themes.append('financial')
-        if any(word in content_lower for word in ['strategy', 'plan', 'goal', 'objective', 'vision', 'mission']):
-            themes.append('strategic')
-        if any(word in content_lower for word in ['process', 'operation', 'efficiency', 'workflow', 'implementation']):
-            themes.append('operational')
-        if any(word in content_lower for word in ['meeting', 'discussion', 'attendees', 'agenda', 'minutes']):
-            themes.append('meeting')
-        if any(word in content_lower for word in ['proposal', 'recommend', 'suggest', 'propose']):
-            themes.append('proposal')
-        if any(word in content_lower for word in ['report', 'analysis', 'findings', 'results', 'summary']):
-            themes.append('report')
-        
-        if not themes:
-            themes = ['business operations']
+        active_themes = [theme for theme, present in themes.items() if present]
+        if not active_themes:
+            active_themes = ['business operations']
         
         # Generate dynamic responses
-        summary = self._generate_summary(content, first_lines, sentences, numbers, themes, filename)
-        insights = self._generate_insights(content, themes, numbers)
-        email = self._generate_email(filename, themes, len(content))
-        tasks = self._generate_tasks(themes, numbers)
+        summary = self._generate_summary(content, first_lines, sentences, numbers, active_themes, filename)
+        insights = self._generate_insights(content, active_themes, numbers)
+        email = self._generate_email(filename, active_themes, len(content))
+        tasks = self._generate_tasks(active_themes, numbers)
         
         return {
             'summary': summary,

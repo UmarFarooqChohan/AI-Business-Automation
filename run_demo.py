@@ -11,7 +11,7 @@ def check_requirements():
     """Check if required packages are installed"""
     try:
         import streamlit
-        import openai
+        import google.generativeai
         print("✅ Required packages found")
         return True
     except ImportError as e:
@@ -20,13 +20,13 @@ def check_requirements():
         return False
 
 def check_api_key():
-    """Check if OpenAI API key is set"""
-    if os.getenv("OPENAI_API_KEY"):
-        print("✅ OpenAI API key found")
+    """Check if Google API key is set"""
+    if os.getenv("GOOGLE_API_KEY") or "AIzaSyA58E56kqLge13tcJy1yoRpOXRKZ20duxc":
+        print("✅ Google API key configured")
         return True
     else:
-        print("❌ OpenAI API key not found")
-        print("Set environment variable: OPENAI_API_KEY=your_key_here")
+        print("❌ Google API key not found")
+        print("Set environment variable: GOOGLE_API_KEY=your_key_here")
         return False
 
 def create_demo_files():
@@ -48,9 +48,9 @@ def main():
     # Check API key
     if not check_api_key():
         print("\n💡 For demo purposes, you can:")
-        print("1. Get a free OpenAI API key at: https://platform.openai.com/")
-        print("2. Set it as environment variable")
-        print("3. Or modify ai_agent.py to use a mock response")
+        print("1. Get a free Google AI API key at: https://aistudio.google.com/app/apikey")
+        print("2. Set it as environment variable: GOOGLE_API_KEY=your_key_here")
+        print("3. Or the app will use the configured key")
         return
     
     # Create demo files
