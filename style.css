@@ -597,3 +597,270 @@ p {
         transition-duration: 0.01ms !important;
     }
 }
+
+
+/* ============================================
+   Authentication Page Styles
+   ============================================ */
+
+/* Login/Signup Form Styling */
+.stForm {
+    background: var(--color-bg-primary);
+    padding: var(--space-6);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Form Input Fields */
+.stTextInput input, .stTextArea textarea {
+    background: var(--color-bg-secondary);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    font-size: var(--font-size-base);
+    transition: all var(--transition-base);
+}
+
+.stTextInput input:focus, .stTextArea textarea:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    background: var(--color-bg-primary);
+}
+
+/* Form Submit Button */
+.stForm button[type="submit"] {
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    border-radius: var(--radius-lg);
+    padding: var(--space-4) var(--space-6);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-lg);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    box-shadow: var(--shadow-md);
+    width: 100%;
+    margin-top: var(--space-4);
+}
+
+.stForm button[type="submit"]:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-xl), var(--glow-primary);
+}
+
+/* Auth Tabs Styling */
+.stTabs [data-baseweb="tab-list"] {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    padding: var(--space-2);
+    border-radius: var(--radius-lg);
+    gap: var(--space-2);
+}
+
+.stTabs [data-baseweb="tab"] {
+    background: transparent;
+    border-radius: var(--radius-md);
+    padding: var(--space-3) var(--space-5);
+    font-weight: var(--font-weight-semibold);
+    transition: all var(--transition-base);
+}
+
+.stTabs [data-baseweb="tab"]:hover {
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.stTabs [aria-selected="true"] {
+    background: var(--primary-gradient);
+    color: white;
+    box-shadow: var(--shadow-md);
+}
+
+/* User Profile Badge */
+.user-badge {
+    background: var(--primary-gradient);
+    color: white;
+    padding: var(--space-3) var(--space-5);
+    border-radius: var(--radius-lg);
+    text-align: center;
+    font-weight: var(--font-weight-semibold);
+    box-shadow: var(--shadow-md);
+    animation: fadeIn var(--transition-base);
+}
+
+/* Guest Mode Info Box */
+.guest-info {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    border-left: 4px solid var(--color-info);
+    padding: var(--space-5);
+    border-radius: var(--radius-lg);
+    margin: var(--space-4) 0;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Welcome Banner */
+.welcome-banner {
+    background: var(--primary-gradient);
+    color: white;
+    padding: var(--space-8);
+    border-radius: var(--radius-2xl);
+    text-align: center;
+    box-shadow: var(--shadow-2xl);
+    margin: var(--space-6) 0;
+    animation: scaleIn var(--transition-slow);
+}
+
+/* Auth Page Container */
+.auth-container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: var(--space-8);
+}
+
+/* Password Strength Indicator */
+.password-strength {
+    height: 4px;
+    border-radius: var(--radius-full);
+    margin-top: var(--space-2);
+    transition: all var(--transition-base);
+}
+
+.password-weak {
+    background: var(--color-error);
+    width: 33%;
+}
+
+.password-medium {
+    background: var(--color-warning);
+    width: 66%;
+}
+
+.password-strong {
+    background: var(--color-success);
+    width: 100%;
+}
+
+/* Logout Button Styling */
+.stButton button[kind="secondary"] {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    border: none;
+}
+
+.stButton button[kind="secondary"]:hover {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Stats Card */
+.stats-card {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    padding: var(--space-5);
+    border-radius: var(--radius-xl);
+    border-left: 4px solid var(--color-primary);
+    margin: var(--space-4) 0;
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-base);
+}
+
+.stats-card:hover {
+    transform: translateX(4px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Form Label Enhancement */
+.stTextInput label, .stTextArea label {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-2);
+}
+
+/* Placeholder Text */
+input::placeholder, textarea::placeholder {
+    color: var(--color-text-tertiary);
+    opacity: 0.6;
+}
+
+/* Success Message Animation */
+.stSuccess {
+    animation: slideIn var(--transition-base), pulse 2s ease-in-out;
+}
+
+/* Error Message Animation */
+.stError {
+    animation: slideIn var(--transition-base);
+}
+
+/* Info Message Animation */
+.stInfo {
+    animation: slideIn var(--transition-base);
+}
+
+/* Warning Message Animation */
+.stWarning {
+    animation: slideIn var(--transition-base);
+}
+
+/* Divider Styling */
+hr {
+    border: none;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--color-border), transparent);
+    margin: var(--space-6) 0;
+}
+
+/* Link Styling */
+a {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: var(--font-weight-semibold);
+    transition: all var(--transition-base);
+}
+
+a:hover {
+    color: var(--color-primary-dark);
+    text-decoration: underline;
+}
+
+/* Checkbox Styling */
+.stCheckbox {
+    padding: var(--space-2) 0;
+}
+
+.stCheckbox label {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-secondary);
+}
+
+/* Radio Button Styling */
+.stRadio label {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-secondary);
+}
+
+/* Select Box Enhancement */
+.stSelectbox select {
+    background: var(--color-bg-secondary);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-3);
+    transition: all var(--transition-base);
+}
+
+.stSelectbox select:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Loading Spinner Enhancement */
+.stSpinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: var(--space-8);
+}
+
+/* Toast Notification Style */
+.stToast {
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    animation: slideIn var(--transition-base);
+}

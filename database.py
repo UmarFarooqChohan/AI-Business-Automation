@@ -13,10 +13,11 @@ class Database:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         
-        # Documents table
+        # Documents table with user_id
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS documents (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER,
                 filename TEXT NOT NULL,
                 content TEXT,
                 summary TEXT,
@@ -41,15 +42,15 @@ class Database:
         conn.commit()
         conn.close()
     
-    def save_document(self, filename: str, content: str, summary: str, insights: str) -> int:
+    def save_document(self, filename: str, content: str, summary: str, insights: str, user_id: Optional[int] = None) -> int:
         """Save processed document"""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         
         cursor.execute('''
-            INSERT INTO documents (filename, content, summary, insights)
-            VALUES (?, ?, ?, ?)
-        ''', (filename, content, summary, insights))
+            INSERT INTO documents (user_id, filename, content, summary, insights)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (user_id, filename, content, summary, insights))
         
         doc_id = cursor.lastrowid
         conn.commit()
@@ -69,17 +70,27 @@ class Database:
         conn.commit()
         conn.close()
     
-    def get_recent_documents(self, limit: int = 10) -> List[Dict]:
-        """Get recent documents"""
+    def get_recent_documents(self, limit: int = 10, user_id: Optional[int] = None) -> List[Dict]:
+        """Get recent documents for a specific user or all if guest"""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         
-        cursor.execute('''
-            SELECT id, filename, summary, created_at
-            FROM documents
-            ORDER BY created_at DESC
-            LIMIT ?
-        ''', (limit,))
+        if user_id is not None:
+            cursor.execute('''
+                SELECT id, filename, summary, created_at
+                FROM documents
+                WHERE user_id = ?
+                ORDER BY created_at DESC
+                LIMIT ?
+            ''', (user_id, limit))
+        else:
+            cursor.execute('''
+                SELECT id, filename, summary, created_at
+                FROM documents
+                WHERE user_id IS NULL
+                ORDER BY created_at DESC
+                LIMIT ?
+            ''', (limit,))
         
         results = cursor.fetchall()
         conn.close()
