@@ -155,12 +155,3 @@ MIT License - Feel free to use and modify
 **Date:** November 2024
 
 ---
-
-## 🚀 Ready to Present?
-
-1. ✅ Run `streamlit run app.py`
-2. ✅ Open http://localhost:8501
-3. ✅ Upload demo files
-4. ✅ Show the magic!
-
-**Good luck! 🏆**
