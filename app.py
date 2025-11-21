@@ -55,11 +55,11 @@ def main():
     
     if demo_mode:
         st.markdown("""
-            <div style='background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); 
+            <div style='background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
                         color: white; padding: 1rem; border-radius: 10px; 
                         text-align: center; font-weight: 600; margin: 1rem 0;
                         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);'>
-                🎭 <strong>Demo Mode Active</strong> - Using pre-generated AI responses for demonstration purposes
+                🎭 <strong>Demo Mode Active</strong> - Using intelligent pre-generated responses based on your document content
             </div>
         """, unsafe_allow_html=True)
     

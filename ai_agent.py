@@ -5,11 +5,14 @@ from config import Config
 class AIAgent:
     def __init__(self):
         if not Config.GOOGLE_API_KEY:
-            raise ValueError("Google API key not found. Set GOOGLE_API_KEY environment variable.")
+            raise ValueError("Google API key not found. Using demo mode.")
         
-        genai.configure(api_key=Config.GOOGLE_API_KEY)
-        self.model = genai.GenerativeModel(Config.DEFAULT_MODEL)
-        self.use_demo_fallback = False
+        try:
+            genai.configure(api_key=Config.GOOGLE_API_KEY)
+            self.model = genai.GenerativeModel(Config.DEFAULT_MODEL)
+            self.use_demo_fallback = False
+        except Exception as e:
+            raise ValueError(f"API configuration failed: {str(e)}")
     
     def analyze_document(self, content: str, filename: str) -> Dict[str, str]:
         # If we've detected quota issues, use demo fallback
@@ -162,8 +165,8 @@ class AIAgent:
         
         except Exception as e:
             error_msg = str(e)
-            # Check for quota or API errors
-            if "quota" in error_msg.lower() or "429" in error_msg or "limit" in error_msg.lower() or "finish_reason" in error_msg.lower():
+            # Check for quota, API errors, or leaked key
+            if any(keyword in error_msg.lower() for keyword in ["quota", "429", "limit", "finish_reason", "leaked", "403", "invalid"]):
                 self.use_demo_fallback = True
                 return "QUOTA_EXCEEDED"
             return f"Error generating response: {error_msg}"

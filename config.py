@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Config:
-    # API Keys - Try Streamlit secrets first, then environment variable, then default
+    # API Keys - Try Streamlit secrets first, then environment variable
     @staticmethod
     def get_api_key():
         try:
@@ -15,7 +15,7 @@ class Config:
                 return st.secrets['GOOGLE_API_KEY']
         except:
             pass
-        return os.getenv("GOOGLE_API_KEY", "AIzaSyA58E56kqLge13tcJy1yoRpOXRKZ20duxc")
+        return os.getenv("GOOGLE_API_KEY")
     
     GOOGLE_API_KEY: Optional[str] = get_api_key.__func__()
     
